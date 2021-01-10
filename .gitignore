@@ -1,0 +1,14 @@
+*.pyc
+
+/dist/*
+
+.DS_Store
+.idea
+.python-version
+.vscode/*
+
+/setup.cfg
+/setup.py
+
+.venv
+/releases/*

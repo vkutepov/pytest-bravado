@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "pytest-bravado"
+version = "1.0.0"
+description = "Pytest-bravado automatically generates from OpenAPI specification client fixtures."
+license = "MIT"
+authors = ["Viktor Kutepov <vkytepov@live.com>"]
+homepage = "https://github.com/vkutepov/pytest-bravado"
+classifiers = ["Framework :: Pytest"]
+
+[tool.poetry.plugins."pytest11"]
+bravado = "pytest_bravado"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+bravado = "^11.0.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+
+build-backend = "poetry.masonry.api"
