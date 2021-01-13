@@ -93,6 +93,6 @@ def create(client):
 
 def generate_fixtures(path):
     @pytest.fixture()
-    def _fixture(body):
-        return path(body=body)
+    def _fixture(request):
+        return path(body=request.param)
     return _fixture

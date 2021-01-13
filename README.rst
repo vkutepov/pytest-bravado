@@ -22,7 +22,7 @@ Your test:
 
     import pytest
 
-    @pytest.mark.parametrize('body', [{'id': '1', 'username': 'Ivan'}])
+    @pytest.mark.parametrize('createUser', [{'id': '1', 'username': 'Ivan'}], indirect=True)
     def test(createUser):
         assert createUser.response().result
 
