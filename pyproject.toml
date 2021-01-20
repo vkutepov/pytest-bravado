@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pytest-bravado"
-version = "1.0.0"
+version = "1.0.3"
 description = "Pytest-bravado automatically generates from OpenAPI specification client fixtures."
 license = "MIT"
 authors = ["Viktor Kutepov <vkytepov@live.com>"]

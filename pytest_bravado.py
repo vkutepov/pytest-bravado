@@ -11,7 +11,7 @@ def pytest_addoption(parser):
                     action="append",
                     default=[],
                     dest="swagger_url",
-                    help="Openapi spec file path or url")
+                    help="Openapi spec url")
 
     group.addoption('--request_headers',
                     action="store",
@@ -30,13 +30,7 @@ def pytest_addoption(parser):
                     action="store_true",
                     default=False,
                     dest="disable_fallback_results",
-                    help="Do not use fallback results even if they're provided")
-
-    group.addoption('--not_return_response',
-                    action="store_true",
-                    default=False,
-                    dest="also_return_response",
-                    help="Please use HttpFuture.response() for accessing the http response")
+                    help="Use fallback results even if they're provided")
 
     group.addoption('--not_validate_responses',
                     action="store_false",
@@ -48,7 +42,7 @@ def pytest_addoption(parser):
                     action="store_false",
                     default=True,
                     dest="validate_requests",
-                    help="Validate outgoing requests", )
+                    help="Validate outgoing requests" )
 
     group.addoption('--not_validate_swagger_spec',
                     action="store_false",
@@ -69,7 +63,6 @@ def pytest_configure(config):
         bravado_config = {
             'response_metadata_class': config.getoption('response_metadata_class'),
             'disable_fallback_results': config.getoption('disable_fallback_results'),
-            'also_return_response': config.getoption('also_return_response'),
             'validate_responses': config.getoption('validate_responses'),
             'validate_requests': config.getoption('validate_requests'),
             'validate_swagger_spec': config.getoption('validate_swagger_spec'),
@@ -94,5 +87,7 @@ def create(client):
 def generate_fixtures(path):
     @pytest.fixture()
     def _fixture(request):
-        return path(body=request.param)
+        if hasattr(request, 'param'):
+            return path(body=request.param)
+        return path
     return _fixture

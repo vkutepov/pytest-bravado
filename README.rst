@@ -2,7 +2,7 @@ pytest-bravado
 ==============
 
 Pytest-bravado automatically generates client fixtures from OpenAPI specification.
-Using `Bravado <https://github.com/Yelp/bravado>`__.
+`Bravado documentation <https://github.com/Yelp/bravado>`__.
 
 Installation
 -------------
@@ -16,15 +16,20 @@ To install pytest-bravado via pip run the following command:
 Example Usage
 -------------
 
-Your test:
+Your tests:
 
 .. code-block:: Python
 
     import pytest
 
-    @pytest.mark.parametrize('createUser', [{'id': '1', 'username': 'Ivan'}], indirect=True)
-    def test(createUser):
-        assert createUser.response().result
+    @pytest.mark.parametrize('getUser', [{'id': 1}], indirect=True)
+    def test_get_user(getUser):
+        assert getUser.response().result
+
+
+    @pytest.mark.parametrize('createUser', [{'id': 2, 'username': 'Ivan'}], indirect=True)
+    def test_create_user(createUser, getUser):
+        assert getUser(id=2).response().result
 
 Run:
 
@@ -44,6 +49,19 @@ Spec example:
     schemes:
     - "http"
     paths:
+      /user{id}:
+        get:
+          operationId: "getUser"
+          parameters:
+          - in: "path"
+            name: "id"
+            required: true
+            type: "integer"
+          responses:
+            default:
+              description: "successful"
+              schema:
+                $ref: "#/definitions/User"
       /createUser:
         post:
           operationId: "createUser"
@@ -63,6 +81,17 @@ Spec example:
         properties:
           id:
             type: "integer"
-            format: "int64"
           username:
             type: "string"
+
+The following flags are supported:
+----------------------------------
+
+- `--swagger_url` - openapi spec url
+- `--request_headers` - request headers
+- `--not_validate_responses` - not validate incoming responses
+- `--not_validate_requests` - not validate outgoing requests
+- `--not_validate_swagger_spec` - not validate the swagger spec
+- `--not_use_models` - not use models (Python classes) instead of dicts for #/definitions/{models}
+- `--enable_fallback_results` - use fallback results even if they're provided
+- `--response_metadata_class` - What class to use for response metadata
