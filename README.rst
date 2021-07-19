@@ -84,7 +84,7 @@ Spec example:
           username:
             type: "string"
 
-The following flags are supported:
+The following flags are supported
 ----------------------------------
 
 - `--swagger_url` - openapi spec url

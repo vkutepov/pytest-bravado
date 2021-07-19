@@ -1,8 +1,10 @@
 import json
 from operator import attrgetter
+from pathlib import Path
 
 import pytest
 from bravado.client import SwaggerClient
+from nested_lookup import nested_update, nested_lookup
 
 
 def pytest_addoption(parser):
@@ -69,25 +71,48 @@ def pytest_configure(config):
             'use_models': config.getoption('use_models')
         }
         for spec in config.getoption('swagger_url'):
-            create(
-                SwaggerClient.from_url(
-                    spec,
-                    request_headers=json.loads(headers),
-                    config=bravado_config
+            create(SwaggerClient.from_url(
+                spec,
+                request_headers=json.loads(headers),
+                config=bravado_config
                 )
-            )
+             )
+
+
+def get_request_example(resource):
+    schema = resource.operation.params['body'].param_spec['schema']
+    example = nested_lookup('example', schema)
+    if not example:
+        definition_name = Path(schema['$ref']).name
+        deref = resource.operation.swagger_spec.deref_flattened_spec['definitions'].get(definition_name)
+        example = nested_lookup('example', deref)
+    return example
+
+
+def update_body(body, param):
+    if param:
+        for k, v in param.items():
+            del param[k]
+            return update_body(nested_update(body, k, v), param)
+    return body
 
 
 def create(client):
     for resource in attrgetter(*dir(client))(client):
         for path in dir(resource):
-            globals()[path] = generate_fixtures(getattr(resource, path))
+            operation = getattr(resource, path)
+            globals()[path] = generate_fixtures(operation, get_request_example(operation))
 
 
-def generate_fixtures(path):
+def generate_fixtures(resource, example):
     @pytest.fixture()
     def _fixture(request):
-        if hasattr(request, 'param'):
-            return path(body=request.param)
-        return path
+        param = getattr(request, 'param', [])
+        if 'no_example' in param:
+            return resource
+        update_example = update_body(example, param)
+        body = update_example if update_example else param
+        response = resource(body=body[0]).response()
+        response.request_body = response.metadata.incoming_response._delegate.request.body
+        return response
     return _fixture
