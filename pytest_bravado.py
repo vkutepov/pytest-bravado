@@ -44,7 +44,7 @@ def pytest_addoption(parser):
                     action="store_false",
                     default=True,
                     dest="validate_requests",
-                    help="Validate outgoing requests" )
+                    help="Validate outgoing requests")
 
     group.addoption('--not_validate_swagger_spec',
                     action="store_false",
@@ -80,13 +80,12 @@ def pytest_configure(config):
 
 
 def get_request_example(resource):
-    schema = resource.operation.params['body'].param_spec['schema']
-    example = nested_lookup('example', schema)
-    if not example:
-        definition_name = Path(schema['$ref']).name
+    for param in resource.operation.params.values():
+        if 'schema' not in param.param_spec:
+            return nested_lookup('example', param.param_spec)
+        definition_name = Path(param.param_spec['schema']['$ref']).name
         deref = resource.operation.swagger_spec.deref_flattened_spec['definitions'].get(definition_name)
-        example = nested_lookup('example', deref)
-    return example
+        return nested_lookup('example', deref)
 
 
 def update_body(body, param):
@@ -107,12 +106,13 @@ def create(client):
 def generate_fixtures(resource, example):
     @pytest.fixture()
     def _fixture(request):
-        param = getattr(request, 'param', [])
-        if 'no_example' in param:
-            return resource
-        update_example = update_body(example, param)
-        body = update_example if update_example else param
-        response = resource(body=body[0]).response()
-        response.request_body = response.metadata.incoming_response._delegate.request.body
-        return response
+        if body := getattr(request, 'param', []):
+            if example:
+                body = update_body(example, body)
+            response = resource(body=body[0]).response()
+            response.request_body = response.metadata.incoming_response._delegate.request.body
+            return response
+        if example:
+            return resource(body=example[0])
+        return resource
     return _fixture

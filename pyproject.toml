@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pytest-bravado"
-version = "1.0.7"
+version = "1.0.9"
 description = "Pytest-bravado automatically generates from OpenAPI specification client fixtures."
 license = "MIT"
 authors = ["Viktor Kutepov <vkytepov@live.com>"]
@@ -11,7 +11,7 @@ classifiers = ["Framework :: Pytest"]
 bravado = "pytest_bravado"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 bravado = "^11.0.2"
 nested_lookup = "0.2.22"
 
