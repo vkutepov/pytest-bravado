@@ -16,7 +16,7 @@ To install pytest-bravado via pip run the following command:
 Example Usage
 -------------
 
-Your tests:
+Simple tests:
 
 .. code-block:: Python
 
@@ -24,12 +24,54 @@ Your tests:
 
     @pytest.mark.parametrize('getUser', [{'id': 1}], indirect=True)
     def test_get_user(getUser):
-        assert getUser.response().result
+        assert getUser.result
 
 
     @pytest.mark.parametrize('createUser', [{'id': 2, 'username': 'Ivan'}], indirect=True)
     def test_create_user(createUser, getUser):
         assert getUser(id=2).response().result
+
+Support openapi example:
+
+If there is an instance in the specifics, it will be used as the default request body.
+
+.. code-block:: yaml
+
+    parameters:
+      - in: "body"
+        name: "body"
+        schema:
+          $ref: "#/definitions/User"
+        example:
+          id: 10
+          username: Oleg
+
+.. code-block:: Python
+
+    import pytest
+
+    def test_create_user(createUser):
+        assert createUser.response().result
+
+Request body:
+
+.. code-block:: Python
+
+    request_bpdy = {'id': 10, 'username': 'Oleg'}
+
+You can use mark parametrize to change all or part of the example.
+
+.. code-block:: Python
+
+    @pytest.mark.parametrize('createUser', [{'username': 'Ivan'}], indirect=True)
+    def test_create_user(createUser):
+        assert createUser.result
+
+Request body:
+
+.. code-block:: Python
+
+    request_bpdy = {'id': 10, 'username': 'Ivan'}
 
 Run:
 
@@ -72,6 +114,9 @@ Spec example:
             name: "body"
             schema:
               $ref: "#/definitions/User"
+            example:
+              id: 10
+              username: Oleg
           responses:
             default:
               description: "successful"
